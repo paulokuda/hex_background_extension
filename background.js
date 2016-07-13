@@ -20,9 +20,10 @@ function updateBackground() {
 	var hexDiv = document.getElementById("hex");
 	timeDiv.innerHTML = hours + " : " + minutes + " : " + seconds;
 	hexDiv.innerHTML = hexCode;
-	
+
 	setInterval(updateBackground, 1000);
 }
+
 document.addEventListener('DOMContentLoaded', function () {
 	updateBackground();
-})
+});
