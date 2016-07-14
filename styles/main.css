@@ -1,3 +1,36 @@
+body {
+  color: white;
+}
+
+div#root {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+div.actions-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-around;
+  padding-top: 15%;
+}
+
 .time-container {
   text-align: center;
+  margin-top: 45%;
+}
+
+div.time-div {
+  font-size: 75px;
+  font-family: 'Roboto', sans-serif;
+}
+
+div.hex-div {
+  padding-top: 10px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 25px;
+}
+
+div.action-item-container {
+  visibility: hidden;
 }

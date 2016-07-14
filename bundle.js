@@ -21095,6 +21095,7 @@
 	
 	var React = __webpack_require__(1);
 	var Time = __webpack_require__(173);
+	var Actions = __webpack_require__(174);
 	
 	var App = React.createClass({
 	  displayName: 'App',
@@ -21102,7 +21103,8 @@
 	    return React.createElement(
 	      'div',
 	      null,
-	      React.createElement(Time, null)
+	      React.createElement(Time, null),
+	      React.createElement(Actions, null)
 	    );
 	  }
 	});
@@ -21119,16 +21121,222 @@
 	
 	var Time = React.createClass({
 	  displayName: "Time",
+	  getInitialState: function getInitialState() {
+	    return {
+	      hours: undefined,
+	      minutes: undefined,
+	      seconds: undefined,
+	      hexCode: undefined
+	    };
+	  },
+	  componentWillMount: function componentWillMount() {
+	    this.tick();
+	  },
+	  tick: function tick() {
+	    var dateObj = new Date();
+	    var hours = dateObj.getHours();
+	    var minutes = dateObj.getMinutes();
+	    var seconds = dateObj.getSeconds();
+	    if (hours / 10 < 1) {
+	      hours = "0" + hours;
+	    }
+	    if (minutes / 10 < 1) {
+	      minutes = "0" + minutes;
+	    }
+	    if (seconds / 10 < 1) {
+	      seconds = "0" + seconds;
+	    }
+	    var hexCode = "#" + hours + minutes + seconds;
+	    this.setState({
+	      hours: hours,
+	      minutes: minutes,
+	      seconds: seconds,
+	      hexCode: hexCode
+	    }, function () {
+	      var body = document.getElementsByTagName("body")[0];
+	      body.style.background = this.state.hexCode;
+	    });
+	    setInterval(this.tick, 1000);
+	  },
 	  render: function render() {
+	    var hours = this.state.hours;
+	    var minutes = this.state.minutes;
+	    var seconds = this.state.seconds;
+	    var hexCode = this.state.hexCode;
 	    return React.createElement(
 	      "div",
 	      { className: "time-container" },
-	      "hello from the time compoent"
+	      React.createElement(
+	        "div",
+	        { className: "time-div" },
+	        hours,
+	        " : ",
+	        minutes,
+	        " : ",
+	        seconds
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "hex-div" },
+	        this.state.hexCode
+	      )
 	    );
 	  }
 	});
 	
 	module.exports = Time;
+
+/***/ },
+/* 174 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var ActionItem = __webpack_require__(175);
+	
+	var Actions = React.createClass({
+	  displayName: 'Actions',
+	
+	  getInitialState: function getInitialState() {
+	    return {
+	      tabIndex: undefined,
+	      lat: undefined,
+	      lon: undefined
+	    };
+	  },
+	  componentWillMount: function componentWillMount() {
+	    var _this = this;
+	
+	    var tempWatchID = navigator.geolocation.watchPosition(function (response) {
+	      if (localStorage.getItem('watchID') === String(tempWatchID)) {
+	        _this.displayRandomLocation();
+	      } else {
+	        localStorage.setItem('watchID', tempWatchID);
+	        localStorage.setItem('lat', response.coords.latitude);
+	        localStorage.setItem('lon', response.coords.longitude);
+	        console.log('ids do not match');
+	        console.log(String(tempWatchID));
+	        console.log(localStorage.getItem('watchID').constructor);
+	        console.log(localStorage);
+	        if (navigator.geolocation) {
+	          navigator.geolocation.getCurrentPosition(function (response) {
+	            _this.getFoodSuggestions(response.coords.latitude, response.coords.longitude);
+	            localStorage.setItem('watchID', tempWatchID);
+	            localStorage.setItem('lat', response.coords.latitude);
+	            localStorage.setItem('lon', response.coords.longitude);
+	          }, _this.showError);
+	        } else {
+	          console.log('You do not have geolocation enabled!');
+	        }
+	      }
+	    });
+	  },
+	  showError: function showError(error) {
+	    switch (error.code) {
+	      case error.PERMISSION_DENIED:
+	        console.log("User denied the request for Geolocation.");
+	        break;
+	      case error.POSITION_UNAVAILABLE:
+	        console.log("Location information is unavailable.");
+	        break;
+	      case error.TIMEOUT:
+	        console.log("The request to get user location timed out.");
+	        break;
+	      case error.UNKNOWN_ERROR:
+	        console.log("An unknown error occurred.");
+	        break;
+	    }
+	  },
+	  getFoodSuggestions: function getFoodSuggestions(lat, lon) {
+	    var baseUrl = "https://api.foursquare.com/v2/venues/search?";
+	    var data = {
+	      ll: lat + "," + lon,
+	      client_id: "JYAR0ED2JU1ZKU0OC05VX35DNSRZ2D1S0EQEVFMWPS3ONJKX",
+	      client_secret: "I1OSOHFMD5VTWUKGH540TDCIZ2XHU3Q0JLTZFTAFM1C3CSTW",
+	      categoryId: "4d4b7105d754a06374d81259", // food category
+	      radius: "4800", // in meters (3 mile)
+	      v: "20160705" // version number (YYYY/MM/DD format)
+	    };
+	    var fullUrl = baseUrl + "ll=" + data.ll + "&client_secret=" + data.client_secret + "&client_id=" + data.client_id + "&categoryId=" + data.categoryId + "&radius=" + data.radius + "&v=" + data.v;
+	    var xhr = new XMLHttpRequest();
+	    var that = this;
+	    xhr.onreadystatechange = function () {
+	      if (xhr.readyState == 4 && xhr.status == 200) {
+	        var parsedResponse = JSON.parse(xhr.responseText);
+	        localStorage.setItem('venuesArray', JSON.stringify(parsedResponse.response.venues));
+	        that.displayRandomLocation();
+	      }
+	    };
+	    xhr.open("GET", fullUrl, true);
+	    xhr.send();
+	  },
+	  getRandomIndex: function getRandomIndex(min, max) {
+	    return Math.round(Math.random() * (max - min) + min);
+	  },
+	  displayRandomLocation: function displayRandomLocation() {
+	    var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
+	    var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
+	    console.log('venues');
+	    console.log(venuesArray);
+	    console.log(randomVenueIndex);
+	    // document.querySelector('.action-item-container').style.visibility = 'visible';
+	    // console.log('local storage');
+	    // localStorage.setItem('venuesArray', JSON.stringify(venuesArray));
+	    // console.log(JSON.parse(localStorage.getItem('venuesArray')));
+	  },
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'div',
+	        { className: 'actions-container' },
+	        React.createElement(
+	          'a',
+	          { onClick: this.getFoodSuggestions.bind(null, this.state.lat, this.state.lon) },
+	          'Hungry'
+	        ),
+	        ' |',
+	        React.createElement(
+	          'a',
+	          null,
+	          'Weather'
+	        ),
+	        ' |',
+	        React.createElement(
+	          'a',
+	          null,
+	          'Events'
+	        )
+	      ),
+	      React.createElement(ActionItem, null)
+	    );
+	  }
+	});
+	
+	module.exports = Actions;
+
+/***/ },
+/* 175 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var ActionItem = React.createClass({
+	  displayName: "ActionItem",
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "action-item-container" },
+	      "hello from the action item component"
+	    );
+	  }
+	});
+	
+	module.exports = ActionItem;
 
 /***/ }
 /******/ ]);

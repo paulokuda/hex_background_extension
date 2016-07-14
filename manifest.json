@@ -10,9 +10,7 @@
     "<all_urls>",
     "chrome://favicon/",
     "management",
-    "sessions",
-    "storage",
-    "tabs",
-    "topSites"
+    "geolocation",
+    "storage"
   ]
 }
