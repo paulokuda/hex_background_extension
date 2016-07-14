@@ -21193,25 +21193,23 @@
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ActionItem = __webpack_require__(175);
+	var Food = __webpack_require__(176);
+	var Weather = __webpack_require__(177);
 	
 	var Actions = React.createClass({
 	  displayName: 'Actions',
 	
 	  getInitialState: function getInitialState() {
 	    return {
-	      tabIndex: undefined,
-	      lat: undefined,
-	      lon: undefined
+	      showActionItem: false,
+	      tabIndex: undefined
 	    };
 	  },
 	  componentWillMount: function componentWillMount() {
 	    var _this = this;
 	
 	    var tempWatchID = navigator.geolocation.watchPosition(function (response) {
-	      if (localStorage.getItem('watchID') === String(tempWatchID)) {
-	        _this.displayRandomLocation();
-	      } else {
+	      if (localStorage.getItem('watchID') !== String(tempWatchID)) {
 	        localStorage.setItem('watchID', tempWatchID);
 	        localStorage.setItem('lat', response.coords.latitude);
 	        localStorage.setItem('lon', response.coords.longitude);
@@ -21220,11 +21218,11 @@
 	        console.log(localStorage.getItem('watchID').constructor);
 	        console.log(localStorage);
 	        if (navigator.geolocation) {
-	          navigator.geolocation.getCurrentPosition(function (response) {
-	            _this.getFoodSuggestions(response.coords.latitude, response.coords.longitude);
+	          navigator.geolocation.getCurrentPosition(function (position) {
+	            _this.getFoodSuggestions(position.coords.latitude, position.coords.longitude);
 	            localStorage.setItem('watchID', tempWatchID);
-	            localStorage.setItem('lat', response.coords.latitude);
-	            localStorage.setItem('lon', response.coords.longitude);
+	            localStorage.setItem('lat', position.coords.latitude);
+	            localStorage.setItem('lon', position.coords.longitude);
 	          }, _this.showError);
 	        } else {
 	          console.log('You do not have geolocation enabled!');
@@ -21249,14 +21247,15 @@
 	    }
 	  },
 	  getFoodSuggestions: function getFoodSuggestions(lat, lon) {
+	    console.log('request');
 	    var baseUrl = "https://api.foursquare.com/v2/venues/search?";
 	    var data = {
 	      ll: lat + "," + lon,
 	      client_id: "JYAR0ED2JU1ZKU0OC05VX35DNSRZ2D1S0EQEVFMWPS3ONJKX",
 	      client_secret: "I1OSOHFMD5VTWUKGH540TDCIZ2XHU3Q0JLTZFTAFM1C3CSTW",
-	      categoryId: "4d4b7105d754a06374d81259", // food category
-	      radius: "4800", // in meters (3 mile)
-	      v: "20160705" // version number (YYYY/MM/DD format)
+	      categoryId: "4d4b7105d754a06374d81259",
+	      radius: "4800",
+	      v: "20160705"
 	    };
 	    var fullUrl = baseUrl + "ll=" + data.ll + "&client_secret=" + data.client_secret + "&client_id=" + data.client_id + "&categoryId=" + data.categoryId + "&radius=" + data.radius + "&v=" + data.v;
 	    var xhr = new XMLHttpRequest();
@@ -21275,6 +21274,22 @@
 	    return Math.round(Math.random() * (max - min) + min);
 	  },
 	  displayRandomLocation: function displayRandomLocation() {
+	    var _this2 = this;
+	
+	    if (this.state.tabIndex !== 0) {
+	      this.setState({
+	        tabIndex: 0,
+	        showActionItem: true
+	      }, function () {
+	        document.querySelector('.action-item-container').style.visibility = _this2.state.showActionItem ? 'visible' : 'hidden';
+	      });
+	    } else {
+	      this.setState({
+	        showActionItem: !this.state.showActionItem
+	      }, function () {
+	        document.querySelector('.action-item-container').style.visibility = _this2.state.showActionItem ? 'visible' : 'hidden';
+	      });
+	    }
 	    var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
 	    var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
 	    console.log('venues');
@@ -21285,7 +21300,41 @@
 	    // localStorage.setItem('venuesArray', JSON.stringify(venuesArray));
 	    // console.log(JSON.parse(localStorage.getItem('venuesArray')));
 	  },
+	  displayWeather: function displayWeather() {
+	    var _this3 = this;
+	
+	    if (this.state.tabIndex !== 1) {
+	      this.setState({
+	        tabIndex: 1,
+	        showActionItem: true
+	      }, function () {
+	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
+	      });
+	    } else {
+	      this.setState({
+	        showActionItem: !this.state.showActionItem
+	      }, function () {
+	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
+	      });
+	    }
+	  },
+	  actionItem: function actionItem() {
+	    if (this.state.tabIndex === 0) {
+	      return React.createElement(Food, null);
+	    } else if (this.state.tabIndex === 1) {
+	      return React.createElement(Weather, null);
+	    }
+	  },
 	  render: function render() {
+	    var category = void 0;
+	    if (this.state.tabIndex === 0) {
+	      category = "Food";
+	      var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
+	      var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
+	      var venue = venuesArray[randomVenueIndex];
+	    } else if (this.state.tabIndex === 1) {
+	      category = "Weather";
+	    }
 	    return React.createElement(
 	      'div',
 	      null,
@@ -21294,13 +21343,13 @@
 	        { className: 'actions-container' },
 	        React.createElement(
 	          'a',
-	          { onClick: this.getFoodSuggestions.bind(null, this.state.lat, this.state.lon) },
+	          { onClick: this.displayRandomLocation },
 	          'Hungry'
 	        ),
 	        ' |',
 	        React.createElement(
 	          'a',
-	          null,
+	          { onClick: this.displayWeather },
 	          'Weather'
 	        ),
 	        ' |',
@@ -21310,7 +21359,11 @@
 	          'Events'
 	        )
 	      ),
-	      React.createElement(ActionItem, null)
+	      React.createElement(
+	        'div',
+	        { className: 'action-item-container' },
+	        this.actionItem()
+	      )
 	    );
 	  }
 	});
@@ -21318,25 +21371,47 @@
 	module.exports = Actions;
 
 /***/ },
-/* 175 */
+/* 175 */,
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	var React = __webpack_require__(1);
 	
-	var ActionItem = React.createClass({
-	  displayName: "ActionItem",
+	var Food = React.createClass({
+	  displayName: 'Food',
 	  render: function render() {
 	    return React.createElement(
-	      "div",
-	      { className: "action-item-container" },
-	      "hello from the action item component"
+	      'div',
+	      null,
+	      'hello from Food'
 	    );
 	  }
 	});
 	
-	module.exports = ActionItem;
+	module.exports = Food;
+
+/***/ },
+/* 177 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	
+	var Weather = React.createClass({
+	  displayName: 'Weather',
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      'hello from Weather'
+	    );
+	  }
+	});
+	
+	module.exports = Weather;
 
 /***/ }
 /******/ ]);

@@ -33,4 +33,8 @@ div.hex-div {
 
 div.action-item-container {
   visibility: hidden;
+  width: 100%;
+  height: 150px;
+  margin-top: 5%;
+  border: 1px solid white;
 }

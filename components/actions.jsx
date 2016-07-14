@@ -1,19 +1,17 @@
 const React = require('react');
-const ActionItem = require('./action_item.jsx');
+const Food = require('./food.jsx');
+const Weather = require('./weather.jsx');
 
 const Actions = React.createClass({
   getInitialState: function () {
     return {
-      tabIndex: undefined,
-      lat: undefined,
-      lon: undefined
+      showActionItem: false,
+      tabIndex: undefined
     };
   },
   componentWillMount() {
     let tempWatchID = navigator.geolocation.watchPosition(response => {
-      if (localStorage.getItem('watchID') === String(tempWatchID)) {
-        this.displayRandomLocation();
-      } else {
+      if (localStorage.getItem('watchID') !== String(tempWatchID)) {
         localStorage.setItem('watchID', tempWatchID);
         localStorage.setItem('lat', response.coords.latitude);
         localStorage.setItem('lon', response.coords.longitude);
@@ -22,11 +20,11 @@ const Actions = React.createClass({
         console.log(localStorage.getItem('watchID').constructor);
         console.log(localStorage);
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(response => {
-            this.getFoodSuggestions(response.coords.latitude, response.coords.longitude);
+          navigator.geolocation.getCurrentPosition(position => {
+            this.getFoodSuggestions(position.coords.latitude, position.coords.longitude);
             localStorage.setItem('watchID', tempWatchID);
-            localStorage.setItem('lat', response.coords.latitude);
-            localStorage.setItem('lon', response.coords.longitude);
+            localStorage.setItem('lat', position.coords.latitude);
+            localStorage.setItem('lon', position.coords.longitude);
           }, this.showError);
         } else {
           console.log('You do not have geolocation enabled!');
@@ -51,14 +49,15 @@ const Actions = React.createClass({
     }
   },
   getFoodSuggestions(lat, lon) {
+    console.log('request');
     let baseUrl = "https://api.foursquare.com/v2/venues/search?";
   	const data = {
   		ll: lat + "," + lon,
   		client_id: "JYAR0ED2JU1ZKU0OC05VX35DNSRZ2D1S0EQEVFMWPS3ONJKX",
   	  client_secret: "I1OSOHFMD5VTWUKGH540TDCIZ2XHU3Q0JLTZFTAFM1C3CSTW",
-  	  categoryId : "4d4b7105d754a06374d81259", // food category
-  	  radius : "4800", // in meters (3 mile)
-  	  v : "20160705" // version number (YYYY/MM/DD format)
+  	  categoryId : "4d4b7105d754a06374d81259",
+  	  radius : "4800",
+  	  v : "20160705"
   	};
     const fullUrl = baseUrl + "ll=" + data.ll + "&client_secret=" + data.client_secret + "&client_id=" + data.client_id + "&categoryId=" + data.categoryId + "&radius=" + data.radius + "&v=" + data.v;
     const xhr = new XMLHttpRequest();
@@ -77,6 +76,20 @@ const Actions = React.createClass({
     return Math.round(Math.random() * (max - min) + min);
   },
   displayRandomLocation() {
+    if (this.state.tabIndex !== 0) {
+        this.setState({
+          tabIndex: 0,
+          showActionItem: true
+        }, () => {
+          document.querySelector('.action-item-container').style.visibility = (this.state.showActionItem ? 'visible' : 'hidden');
+        });
+    } else {
+      this.setState({
+        showActionItem: !this.state.showActionItem
+      }, () => {
+        document.querySelector('.action-item-container').style.visibility = (this.state.showActionItem ? 'visible' : 'hidden');
+      });
+    }
     const venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
     const randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
     console.log('venues');
@@ -87,15 +100,49 @@ const Actions = React.createClass({
     // localStorage.setItem('venuesArray', JSON.stringify(venuesArray));
     // console.log(JSON.parse(localStorage.getItem('venuesArray')));
   },
+  displayWeather() {
+    if (this.state.tabIndex !== 1) {
+      this.setState({
+        tabIndex: 1,
+        showActionItem: true
+      }, () => {
+        document.querySelector('.action-item-container').style.visibility = (this.state.showActionItem ? 'visible' : 'hidden');
+      });
+    } else {
+      this.setState({
+        showActionItem: !this.state.showActionItem
+      }, () => {
+        document.querySelector('.action-item-container').style.visibility = (this.state.showActionItem ? 'visible' : 'hidden');
+      });
+    }
+  },
+  actionItem() {
+    if (this.state.tabIndex === 0) {
+      return <Food />;
+    } else if (this.state.tabIndex === 1) {
+      return <Weather />;
+    }
+  },
   render() {
+    let category;
+    if (this.state.tabIndex === 0) {
+      category = "Food";
+      const venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
+      const randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
+      const venue = venuesArray[randomVenueIndex];
+    } else if (this.state.tabIndex === 1) {
+      category = "Weather";
+    }
     return (
       <div>
         <div className="actions-container">
-          <a onClick={this.getFoodSuggestions.bind(null, this.state.lat, this.state.lon)}>Hungry</a> |
-          <a>Weather</a> |
+          <a onClick={this.displayRandomLocation}>Hungry</a> |
+          <a onClick={this.displayWeather}>Weather</a> |
           <a>Events</a>
         </div>
-        <ActionItem />
+        <div className="action-item-container">
+          {this.actionItem()}
+        </div>
       </div>
     );
   }
