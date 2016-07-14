@@ -1,5 +1,6 @@
 body {
   color: white;
+  font-family: 'Roboto', sans-serif;
 }
 
 div#root {
@@ -36,5 +37,8 @@ div.action-item-container {
   width: 100%;
   height: 150px;
   margin-top: 5%;
-  border: 1px solid white;
+  border: 1px solid black;
+  background-color: #ffffff;
+  color: #000000;
+  padding: 15px;
 }

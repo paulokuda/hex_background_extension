@@ -6,6 +6,7 @@ const Actions = React.createClass({
   getInitialState: function () {
     return {
       showActionItem: false,
+      weatherLoaded: false,
       tabIndex: undefined
     };
   },
@@ -29,6 +30,8 @@ const Actions = React.createClass({
         } else {
           console.log('You do not have geolocation enabled!');
         }
+      } else {
+        this.getWeatherStatus(localStorage.getItem('lat'), localStorage.getItem('lon'));
       }
     });
   },
@@ -48,6 +51,22 @@ const Actions = React.createClass({
         break;
     }
   },
+  getWeatherStatus(lat, lon) {
+    if (localStorage.getItem('currentWeather')) {
+      const xhr = new XMLHttpRequest();
+      const fullUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=f3a4a069b47d1da654b6bbf6d730f318`;
+      const that = this;
+      xhr.onreadystatechange = function() {
+    	  if (xhr.readyState == 4 && xhr.status == 200) {
+    	    const parsedResponse = JSON.parse(xhr.responseText);
+          localStorage.setItem('currentWeatherLocation', parsedResponse.name)
+          localStorage.setItem('currentWeather', JSON.stringify(parsedResponse.weather));
+    	  }
+      };
+      xhr.open("GET", fullUrl, true);
+      xhr.send();
+    }
+	},
   getFoodSuggestions(lat, lon) {
     console.log('request');
     let baseUrl = "https://api.foursquare.com/v2/venues/search?";
@@ -56,7 +75,7 @@ const Actions = React.createClass({
   		client_id: "JYAR0ED2JU1ZKU0OC05VX35DNSRZ2D1S0EQEVFMWPS3ONJKX",
   	  client_secret: "I1OSOHFMD5VTWUKGH540TDCIZ2XHU3Q0JLTZFTAFM1C3CSTW",
   	  categoryId : "4d4b7105d754a06374d81259",
-  	  radius : "4800",
+  	  radius : "6400",
   	  v : "20160705"
   	};
     const fullUrl = baseUrl + "ll=" + data.ll + "&client_secret=" + data.client_secret + "&client_id=" + data.client_id + "&categoryId=" + data.categoryId + "&radius=" + data.radius + "&v=" + data.v;
@@ -66,7 +85,7 @@ const Actions = React.createClass({
   	  if (xhr.readyState == 4 && xhr.status == 200) {
   	    const parsedResponse = JSON.parse(xhr.responseText);
         localStorage.setItem('venuesArray', JSON.stringify(parsedResponse.response.venues));
-        that.displayRandomLocation();
+        that.displayFood();
   	  }
   	};
   	xhr.open("GET", fullUrl, true);
@@ -75,7 +94,7 @@ const Actions = React.createClass({
   getRandomIndex(min, max) {
     return Math.round(Math.random() * (max - min) + min);
   },
-  displayRandomLocation() {
+  displayFood() {
     if (this.state.tabIndex !== 0) {
         this.setState({
           tabIndex: 0,
@@ -90,11 +109,6 @@ const Actions = React.createClass({
         document.querySelector('.action-item-container').style.visibility = (this.state.showActionItem ? 'visible' : 'hidden');
       });
     }
-    const venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
-    const randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
-    console.log('venues');
-    console.log(venuesArray);
-    console.log(randomVenueIndex);
     // document.querySelector('.action-item-container').style.visibility = 'visible';
     // console.log('local storage');
     // localStorage.setItem('venuesArray', JSON.stringify(venuesArray));
@@ -118,27 +132,30 @@ const Actions = React.createClass({
   },
   actionItem() {
     if (this.state.tabIndex === 0) {
-      return <Food />;
+      const venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
+      const randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
+      const venue = venuesArray[randomVenueIndex];
+      console.log('venue');
+      console.log(venue);
+      return <Food venue={venue} />;
     } else if (this.state.tabIndex === 1) {
-      return <Weather />;
+      const weatherObj = localStorage.getItem('currentWeather');
+      const location = localStorage.getItem('currentWeatherLocation');
+      return <Weather weather={weatherObj} location={location} />;
     }
   },
   render() {
     let category;
     if (this.state.tabIndex === 0) {
       category = "Food";
-      const venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
-      const randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
-      const venue = venuesArray[randomVenueIndex];
     } else if (this.state.tabIndex === 1) {
       category = "Weather";
     }
     return (
       <div>
         <div className="actions-container">
-          <a onClick={this.displayRandomLocation}>Hungry</a> |
-          <a onClick={this.displayWeather}>Weather</a> |
-          <a>Events</a>
+          <a onClick={this.displayFood}>Hungry</a> |
+          <a onClick={this.displayWeather}>Weather</a>
         </div>
         <div className="action-item-container">
           {this.actionItem()}

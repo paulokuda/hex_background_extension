@@ -21193,8 +21193,8 @@
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var Food = __webpack_require__(176);
-	var Weather = __webpack_require__(177);
+	var Food = __webpack_require__(175);
+	var Weather = __webpack_require__(176);
 	
 	var Actions = React.createClass({
 	  displayName: 'Actions',
@@ -21202,6 +21202,7 @@
 	  getInitialState: function getInitialState() {
 	    return {
 	      showActionItem: false,
+	      weatherLoaded: false,
 	      tabIndex: undefined
 	    };
 	  },
@@ -21227,6 +21228,8 @@
 	        } else {
 	          console.log('You do not have geolocation enabled!');
 	        }
+	      } else {
+	        _this.getWeatherStatus(localStorage.getItem('lat'), localStorage.getItem('lon'));
 	      }
 	    });
 	  },
@@ -21246,6 +21249,26 @@
 	        break;
 	    }
 	  },
+	  getWeatherStatus: function getWeatherStatus(lat, lon) {
+	    var _this2 = this;
+	
+	    if (localStorage.getItem('currentWeather')) {
+	      (function () {
+	        var xhr = new XMLHttpRequest();
+	        var fullUrl = 'http://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&appid=f3a4a069b47d1da654b6bbf6d730f318';
+	        var that = _this2;
+	        xhr.onreadystatechange = function () {
+	          if (xhr.readyState == 4 && xhr.status == 200) {
+	            var parsedResponse = JSON.parse(xhr.responseText);
+	            localStorage.setItem('currentWeatherLocation', parsedResponse.name);
+	            localStorage.setItem('currentWeather', JSON.stringify(parsedResponse.weather));
+	          }
+	        };
+	        xhr.open("GET", fullUrl, true);
+	        xhr.send();
+	      })();
+	    }
+	  },
 	  getFoodSuggestions: function getFoodSuggestions(lat, lon) {
 	    console.log('request');
 	    var baseUrl = "https://api.foursquare.com/v2/venues/search?";
@@ -21254,7 +21277,7 @@
 	      client_id: "JYAR0ED2JU1ZKU0OC05VX35DNSRZ2D1S0EQEVFMWPS3ONJKX",
 	      client_secret: "I1OSOHFMD5VTWUKGH540TDCIZ2XHU3Q0JLTZFTAFM1C3CSTW",
 	      categoryId: "4d4b7105d754a06374d81259",
-	      radius: "4800",
+	      radius: "6400",
 	      v: "20160705"
 	    };
 	    var fullUrl = baseUrl + "ll=" + data.ll + "&client_secret=" + data.client_secret + "&client_id=" + data.client_id + "&categoryId=" + data.categoryId + "&radius=" + data.radius + "&v=" + data.v;
@@ -21264,7 +21287,7 @@
 	      if (xhr.readyState == 4 && xhr.status == 200) {
 	        var parsedResponse = JSON.parse(xhr.responseText);
 	        localStorage.setItem('venuesArray', JSON.stringify(parsedResponse.response.venues));
-	        that.displayRandomLocation();
+	        that.displayFood();
 	      }
 	    };
 	    xhr.open("GET", fullUrl, true);
@@ -21273,65 +21296,64 @@
 	  getRandomIndex: function getRandomIndex(min, max) {
 	    return Math.round(Math.random() * (max - min) + min);
 	  },
-	  displayRandomLocation: function displayRandomLocation() {
-	    var _this2 = this;
+	  displayFood: function displayFood() {
+	    var _this3 = this;
 	
 	    if (this.state.tabIndex !== 0) {
 	      this.setState({
 	        tabIndex: 0,
 	        showActionItem: true
 	      }, function () {
-	        document.querySelector('.action-item-container').style.visibility = _this2.state.showActionItem ? 'visible' : 'hidden';
+	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
 	      });
 	    } else {
 	      this.setState({
 	        showActionItem: !this.state.showActionItem
 	      }, function () {
-	        document.querySelector('.action-item-container').style.visibility = _this2.state.showActionItem ? 'visible' : 'hidden';
+	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
 	      });
 	    }
-	    var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
-	    var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
-	    console.log('venues');
-	    console.log(venuesArray);
-	    console.log(randomVenueIndex);
 	    // document.querySelector('.action-item-container').style.visibility = 'visible';
 	    // console.log('local storage');
 	    // localStorage.setItem('venuesArray', JSON.stringify(venuesArray));
 	    // console.log(JSON.parse(localStorage.getItem('venuesArray')));
 	  },
 	  displayWeather: function displayWeather() {
-	    var _this3 = this;
+	    var _this4 = this;
 	
 	    if (this.state.tabIndex !== 1) {
 	      this.setState({
 	        tabIndex: 1,
 	        showActionItem: true
 	      }, function () {
-	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
+	        document.querySelector('.action-item-container').style.visibility = _this4.state.showActionItem ? 'visible' : 'hidden';
 	      });
 	    } else {
 	      this.setState({
 	        showActionItem: !this.state.showActionItem
 	      }, function () {
-	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
+	        document.querySelector('.action-item-container').style.visibility = _this4.state.showActionItem ? 'visible' : 'hidden';
 	      });
 	    }
 	  },
 	  actionItem: function actionItem() {
 	    if (this.state.tabIndex === 0) {
-	      return React.createElement(Food, null);
+	      var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
+	      var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
+	      var venue = venuesArray[randomVenueIndex];
+	      console.log('venue');
+	      console.log(venue);
+	      return React.createElement(Food, { venue: venue });
 	    } else if (this.state.tabIndex === 1) {
-	      return React.createElement(Weather, null);
+	      var weatherObj = localStorage.getItem('currentWeather');
+	      var location = localStorage.getItem('currentWeatherLocation');
+	      return React.createElement(Weather, { weather: weatherObj, location: location });
 	    }
 	  },
 	  render: function render() {
 	    var category = void 0;
 	    if (this.state.tabIndex === 0) {
 	      category = "Food";
-	      var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
-	      var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
-	      var venue = venuesArray[randomVenueIndex];
 	    } else if (this.state.tabIndex === 1) {
 	      category = "Weather";
 	    }
@@ -21343,7 +21365,7 @@
 	        { className: 'actions-container' },
 	        React.createElement(
 	          'a',
-	          { onClick: this.displayRandomLocation },
+	          { onClick: this.displayFood },
 	          'Hungry'
 	        ),
 	        ' |',
@@ -21351,12 +21373,6 @@
 	          'a',
 	          { onClick: this.displayWeather },
 	          'Weather'
-	        ),
-	        ' |',
-	        React.createElement(
-	          'a',
-	          null,
-	          'Events'
 	        )
 	      ),
 	      React.createElement(
@@ -21371,21 +21387,59 @@
 	module.exports = Actions;
 
 /***/ },
-/* 175 */,
-/* 176 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	var React = __webpack_require__(1);
 	
 	var Food = React.createClass({
-	  displayName: 'Food',
+	  displayName: "Food",
 	  render: function render() {
 	    return React.createElement(
-	      'div',
-	      null,
-	      'hello from Food'
+	      "div",
+	      { className: "venue-wrap" },
+	      React.createElement(
+	        "div",
+	        { className: "venue-name" },
+	        this.props.venue.name
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-phone" },
+	        this.props.venue.contact.formattedPhone
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-count" },
+	        this.props.venue.hereNow.count
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-checkins" },
+	        this.props.venue.stats.checkinsCount
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-url" },
+	        this.props.venue.url
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-shortname" },
+	        this.props.venue.categories[0].shortName
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-address" },
+	        this.props.venue.location.address
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-distance" },
+	        this.props.venue.location.distance
+	      )
 	    );
 	  }
 	});
@@ -21393,7 +21447,7 @@
 	module.exports = Food;
 
 /***/ },
-/* 177 */
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -21403,10 +21457,16 @@
 	var Weather = React.createClass({
 	  displayName: 'Weather',
 	  render: function render() {
+	    console.log('weather');
+	    console.log(JSON.parse(this.props.weather)[0]);
 	    return React.createElement(
 	      'div',
 	      null,
-	      'hello from Weather'
+	      'Weather in ',
+	      this.props.location,
+	      ':',
+	      React.createElement('br', null),
+	      JSON.parse(this.props.weather)[0].description
 	    );
 	  }
 	});
