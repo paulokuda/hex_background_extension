@@ -36,7 +36,7 @@ const Time = React.createClass({
       const body = document.getElementsByTagName("body")[0];
 	    body.style.background = this.state.hexCode;
     });
-    setInterval(this.tick, 1000);
+    setTimeout(this.tick, 1000);
   },
   render() {
     const hours = this.state.hours;

@@ -5,7 +5,7 @@ const Actions = require('./actions.jsx');
 const App = React.createClass({
   render() {
     return (
-      <div>
+      <div className="app-container">
         <Time />
         <Actions />
       </div>

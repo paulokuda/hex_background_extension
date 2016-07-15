@@ -21102,7 +21102,7 @@
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      null,
+	      { className: 'app-container' },
 	      React.createElement(Time, null),
 	      React.createElement(Actions, null)
 	    );
@@ -21156,7 +21156,7 @@
 	      var body = document.getElementsByTagName("body")[0];
 	      body.style.background = this.state.hexCode;
 	    });
-	    setInterval(this.tick, 1000);
+	    setTimeout(this.tick, 1000);
 	  },
 	  render: function render() {
 	    var hours = this.state.hours;
@@ -21214,10 +21214,6 @@
 	        localStorage.setItem('watchID', tempWatchID);
 	        localStorage.setItem('lat', response.coords.latitude);
 	        localStorage.setItem('lon', response.coords.longitude);
-	        console.log('ids do not match');
-	        console.log(String(tempWatchID));
-	        console.log(localStorage.getItem('watchID').constructor);
-	        console.log(localStorage);
 	        if (navigator.geolocation) {
 	          navigator.geolocation.getCurrentPosition(function (position) {
 	            _this.getFoodSuggestions(position.coords.latitude, position.coords.longitude);
@@ -21270,7 +21266,6 @@
 	    }
 	  },
 	  getFoodSuggestions: function getFoodSuggestions(lat, lon) {
-	    console.log('request');
 	    var baseUrl = "https://api.foursquare.com/v2/venues/search?";
 	    var data = {
 	      ll: lat + "," + lon,
@@ -21313,10 +21308,6 @@
 	        document.querySelector('.action-item-container').style.visibility = _this3.state.showActionItem ? 'visible' : 'hidden';
 	      });
 	    }
-	    // document.querySelector('.action-item-container').style.visibility = 'visible';
-	    // console.log('local storage');
-	    // localStorage.setItem('venuesArray', JSON.stringify(venuesArray));
-	    // console.log(JSON.parse(localStorage.getItem('venuesArray')));
 	  },
 	  displayWeather: function displayWeather() {
 	    var _this4 = this;
@@ -21341,8 +21332,6 @@
 	      var venuesArray = JSON.parse(localStorage.getItem('venuesArray'));
 	      var randomVenueIndex = this.getRandomIndex(0, venuesArray.length - 1);
 	      var venue = venuesArray[randomVenueIndex];
-	      console.log('venue');
-	      console.log(venue);
 	      return React.createElement(Food, { venue: venue });
 	    } else if (this.state.tabIndex === 1) {
 	      var weatherObj = localStorage.getItem('currentWeather');
@@ -21351,12 +21340,6 @@
 	    }
 	  },
 	  render: function render() {
-	    var category = void 0;
-	    if (this.state.tabIndex === 0) {
-	      category = "Food";
-	    } else if (this.state.tabIndex === 1) {
-	      category = "Weather";
-	    }
 	    return React.createElement(
 	      'div',
 	      null,
@@ -21366,13 +21349,13 @@
 	        React.createElement(
 	          'a',
 	          { onClick: this.displayFood },
-	          'Hungry'
+	          'HUNGRY'
 	        ),
 	        ' |',
 	        React.createElement(
 	          'a',
 	          { onClick: this.displayWeather },
-	          'Weather'
+	          'WEATHER'
 	        )
 	      ),
 	      React.createElement(
@@ -21402,43 +21385,61 @@
 	      { className: "venue-wrap" },
 	      React.createElement(
 	        "div",
-	        { className: "venue-name" },
-	        this.props.venue.name
+	        { className: "venue-name center-text" },
+	        React.createElement(
+	          "a",
+	          { href: this.props.venue.url, target: "_blank" },
+	          this.props.venue.name
+	        )
 	      ),
 	      React.createElement(
 	        "div",
-	        { className: "venue-phone" },
-	        this.props.venue.contact.formattedPhone
-	      ),
-	      React.createElement(
-	        "div",
-	        { className: "venue-count" },
-	        this.props.venue.hereNow.count
-	      ),
-	      React.createElement(
-	        "div",
-	        { className: "venue-checkins" },
-	        this.props.venue.stats.checkinsCount
-	      ),
-	      React.createElement(
-	        "div",
-	        { className: "venue-url" },
-	        this.props.venue.url
-	      ),
-	      React.createElement(
-	        "div",
-	        { className: "venue-shortname" },
+	        { className: "venue-shortname center-text" },
 	        this.props.venue.categories[0].shortName
 	      ),
 	      React.createElement(
 	        "div",
-	        { className: "venue-address" },
+	        { className: "venue-address center-text" },
 	        this.props.venue.location.address
 	      ),
 	      React.createElement(
 	        "div",
-	        { className: "venue-distance" },
-	        this.props.venue.location.distance
+	        { className: "venue-distance center-text" },
+	        (this.props.venue.location.distance * 0.000621371).toFixed(2),
+	        " miles away"
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-phone center-text" },
+	        this.props.venue.contact.formattedPhone ? this.props.venue.contact.formattedPhone : "No phone number listed"
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "venue-stats" },
+	        React.createElement(
+	          "div",
+	          { className: "venue-count" },
+	          "People here now:",
+	          React.createElement("br", null),
+	          " ",
+	          React.createElement(
+	            "center",
+	            null,
+	            this.props.venue.hereNow.count
+	          )
+	        ),
+	        React.createElement(
+	          "div",
+	          { className: "venue-checkins" },
+	          "Total Checkins:",
+	          React.createElement("br", null),
+	          " ",
+	          React.createElement(
+	            "center",
+	            null,
+	            this.props.venue.stats.checkinsCount
+	          )
+	        )
 	      )
 	    );
 	  }
@@ -21450,23 +21451,38 @@
 /* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	var React = __webpack_require__(1);
 	
 	var Weather = React.createClass({
-	  displayName: 'Weather',
+	  displayName: "Weather",
 	  render: function render() {
-	    console.log('weather');
-	    console.log(JSON.parse(this.props.weather)[0]);
+	    var currentWeather = JSON.parse(this.props.weather)[0];
 	    return React.createElement(
-	      'div',
+	      "div",
 	      null,
-	      'Weather in ',
-	      this.props.location,
-	      ':',
-	      React.createElement('br', null),
-	      JSON.parse(this.props.weather)[0].description
+	      React.createElement(
+	        "div",
+	        { className: "weather-location" },
+	        React.createElement(
+	          "center",
+	          null,
+	          "Current Weather in ",
+	          React.createElement(
+	            "u",
+	            null,
+	            this.props.location
+	          ),
+	          ":"
+	        ),
+	        React.createElement("br", null)
+	      ),
+	      React.createElement(
+	        "div",
+	        { className: "weather-conditions" },
+	        currentWeather.description.toUpperCase()
+	      )
 	    );
 	  }
 	});

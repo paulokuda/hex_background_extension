@@ -27,18 +27,45 @@ div.time-div {
 }
 
 div.hex-div {
-  padding-top: 10px;
+  padding-top: 15px;
   font-family: 'Roboto', sans-serif;
   font-size: 25px;
 }
 
 div.action-item-container {
   visibility: hidden;
-  width: 100%;
+  width: 94%;
+  margin-right: 9%;
   height: 150px;
   margin-top: 5%;
-  border: 1px solid black;
-  background-color: #ffffff;
+  background-color: #f9f9f9;
+  box-shadow: 1px 1px 1px #9e9e9e;
   color: #000000;
   padding: 15px;
+}
+
+div.venue-wrap {
+  flex-flow: column wrap;
+}
+
+div.venue-name {
+  font-size: 18px;
+}
+
+div.center-text {
+  display: flex;
+  justify-content: center;
+}
+
+div.venue-stats {
+  padding-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+
+div.weather-conditions {
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+  font-size: 24px;
 }
