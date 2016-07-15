@@ -48,7 +48,7 @@ const Actions = React.createClass({
     }
   },
   getWeatherStatus(lat, lon) {
-    if (localStorage.getItem('currentWeather')) {
+    if (!localStorage.getItem('currentWeather')) {
       const xhr = new XMLHttpRequest();
       const fullUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=f3a4a069b47d1da654b6bbf6d730f318`;
       const that = this;

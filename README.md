@@ -1,0 +1,1 @@
+Created a <a href="https://chrome.google.com/webstore/detail/coloroclock/fkjfljkpadjijmbihpnkbigoffoaikao">Google Chrome Extension</a> that displays background color matching the current hex time. Contact me if you have any suggestions!
